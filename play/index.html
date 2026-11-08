@@ -1,0 +1,364 @@
+<title>Manga Life</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<style>
+/* Un seul monde visuel : la nuit d'Astria. Plein écran, le jeu Godot occupe toute la page. */
+:root {
+  --night: #070b1c;
+  --glass: #12183a;
+  --ink: #f4f6ff;
+  --muted: #a9b2d8;
+  --gold: #ffd16b;
+  --blue: #3b5bff;
+  --font: "M PLUS Rounded 1c", "Segoe UI", system-ui, sans-serif;
+  --field: #0b1030;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--font);
+  overflow: hidden;
+  touch-action: none;
+}
+/* iOS agrandit la page quand un champ de saisie a un texte < 16 px : on l'en empêche. */
+input, textarea { font-size: 16px !important; }
+html, body { overscroll-behavior: none; }
+#canvas {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+#splash {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: env(safe-area-inset-top, 0px) env(safe-area-inset-bottom, 0px);
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(59, 91, 255, .35), transparent 60%),
+    radial-gradient(90% 60% at 50% 100%, rgba(255, 140, 190, .18), transparent 65%),
+    var(--night);
+  z-index: 2;
+  transition: opacity .5s ease;
+}
+#splash.done { opacity: 0; pointer-events: none; }
+.card {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 18px;
+  text-align: center;
+}
+.kicker {
+  font-size: 13px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+h1 {
+  margin: 0;
+  font-size: clamp(44px, 12vw, 64px);
+  font-weight: 800;
+  line-height: 1;
+  text-wrap: balance;
+}
+.lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid rgba(255, 209, 107, .35);
+  overflow: hidden;
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+  transition: width .2s ease;
+}
+#status { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+#status.error { color: #ff9aa5; }
+.note { font-size: 12px; color: var(--muted); opacity: .8; }
+@media (prefers-color-scheme: light) {
+  :root { --night: #e9ecfb; --glass: #d6dbf5; --ink: #1b2048; --muted: #4c557f; --gold: #9a6a12; --field: #ffffff; color-scheme: light; }
+  #splash { background: radial-gradient(120% 70% at 50% 0%, rgba(59, 91, 255, .18), transparent 60%), radial-gradient(90% 60% at 50% 100%, rgba(255, 140, 190, .14), transparent 65%), var(--night); }
+}
+@media (prefers-reduced-motion: reduce) { #splash, .bar > i { transition: none; } }
+
+/* Bulle « Remarque » des testeurs */
+#fb { position: fixed; inset: 0; z-index: 5; display: none; background: rgba(4, 6, 18, .62);
+  padding: max(14px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px)); }
+#fb.open { display: block; }
+#fb .box { max-width: 460px; margin: 0 auto; background: var(--glass); border: 1px solid rgba(255, 209, 107, .45);
+  border-radius: 20px; padding: 16px; display: grid; gap: 12px; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+#fb h2 { margin: 0; font-size: 18px; font-weight: 800; }
+#fb .top { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; }
+#fb img { width: 44px; border-radius: 10px; border: 1px solid rgba(255,255,255,.18); display: block; }
+#fb .ctx { font-size: 13px; color: var(--ink); opacity: .8; line-height: 1.4; }
+#fb input, #fb textarea { width: 100%; box-sizing: border-box; border-radius: 12px; border: 2px solid rgba(255, 209, 107, .55);
+  background: var(--field); color: var(--ink); font-family: var(--font); font-weight: 500; padding: 10px 12px; outline: none; }
+#fb input:focus, #fb textarea:focus { border-color: var(--gold); }
+#fb input::placeholder, #fb textarea::placeholder { color: var(--muted); opacity: 1; }
+#fb textarea { min-height: 110px; resize: vertical; }
+#fb .row { display: flex; gap: 10px; }
+#fb button { flex: 1; min-height: 46px; border-radius: 999px; border: 1px solid rgba(255,255,255,.25); background: transparent;
+  color: var(--ink); font: 800 15px var(--font); cursor: pointer; }
+#fb button.go { background: linear-gradient(90deg, var(--gold), #ffb347); color: #241a00; border: 0; }
+#fb button:disabled { opacity: .5; }
+#fb .foot { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); gap: 8px; }
+#fb .foot button { flex: 0 0 auto; min-height: 34px; padding: 0 14px; font-size: 13px; }
+#fbToast { position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  z-index: 6; background: var(--glass); color: var(--ink); border: 1px solid rgba(255,209,107,.5); border-radius: 999px;
+  padding: 12px 20px; font-size: 15px; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,.35); max-width: calc(100% - 32px); text-align: center; opacity: 0; transition: opacity .3s; pointer-events: none; }
+#fbToast.on { opacity: 1; }
+</style>
+
+<canvas id="canvas" tabindex="0">Votre navigateur ne gère pas le canvas.</canvas>
+
+
+<div id="fb" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+  <div class="box">
+    <h2 id="fbTitle">Une remarque sur cet écran ?</h2>
+    <textarea id="fbText" placeholder="Ce qui te gêne, ce qui te plaît, une idée… (tu peux dicter)"></textarea>
+    <input id="fbName" type="text" placeholder="Ton prénom (une seule fois)" autocomplete="given-name" maxlength="30">
+    <div class="top"><img id="fbShot" alt="Capture de l'écran"><div class="ctx" id="fbCtx"></div></div>
+    <div class="row"><button id="fbCancel" type="button">Annuler</button><button id="fbSend" class="go" type="button">Envoyer</button></div>
+    <div class="foot"><span id="fbCount"></span><button id="fbExport" type="button">Exporter mes remarques</button></div>
+  </div>
+</div>
+<div id="fbToast" role="status" aria-live="polite"></div>
+
+<div id="splash" role="status" aria-live="polite">
+  <div class="card">
+    <div class="kicker">Simulateur de vie • Univers manga</div>
+    <h1>Manga Life</h1>
+    <p class="lede">Naissez Humain, Astrien ou Verdari. Grandissez sur Terre, Astria ou Verdea, une année à la fois.</p>
+    <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+    <div id="status">Chargement du moteur…</div>
+    <div class="note">Premier chargement : environ 32 Mo. La partie est sauvegardée dans ce navigateur.</div>
+  </div>
+</div>
+
+<script>
+// Mobile : pas de zoom automatique, retour à la normale quand le clavier se ferme,
+// et rendu limité à 2 pixels par point (bien plus fluide sur iPhone).
+(function () {
+  var vp = document.querySelector('meta[name="viewport"]');
+  if (!vp) { vp = document.createElement("meta"); vp.name = "viewport"; document.head.appendChild(vp); }
+  vp.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover");
+  function reset() { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; }
+  document.addEventListener("focusout", function () { setTimeout(reset, 50); }, true);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", function () { if (window.visualViewport.scale <= 1.01) reset(); });
+  }
+  document.addEventListener("gesturestart", function (e) { e.preventDefault(); }, { passive: false });
+  var realDpr = window.devicePixelRatio || 1;
+  try { Object.defineProperty(window, "devicePixelRatio", { get: function () { return Math.min(2, realDpr); }, configurable: true }); } catch (e) {}
+})();
+</script>
+<script>
+// Le moteur Godot demande « index.wasm » et « index.pck ». Les fichiers d'un
+// artefact sont limités en taille : le wasm est publié compressé (gzip) et le
+// pck découpé en deux morceaux. On les reconstitue ici, avant le moteur.
+(function () {
+  const realFetch = window.fetch.bind(window);
+  async function joinParts(paths) {
+    const blobs = [];
+    for (const p of paths) {
+      const r = await realFetch(p);
+      if (!r.ok) throw new Error("Fichier introuvable : " + p);
+      blobs.push(await r.blob());
+    }
+    return new Blob(blobs);
+  }
+  window.fetch = async function (input, init) {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    if (/(^|\/)index\.wasm(\?|$)/.test(url)) {
+      const gz = await joinParts(["engine.gz.wasm"]);
+      const raw = await new Response(gz.stream().pipeThrough(new DecompressionStream("gzip"))).blob();
+      return new Response(raw, { status: 200, headers: { "Content-Type": "application/wasm", "Content-Length": String(raw.size) } });
+    }
+    if (/(^|\/)index\.pck(\?|$)/.test(url)) {
+      const gzp = await joinParts(["pckgz0.wasm", "pckgz1.wasm", "pckgz2.wasm", "pckgz3.wasm", "pckgz4.wasm"]);
+      const pck = await new Response(gzp.stream().pipeThrough(new DecompressionStream("gzip"))).blob();
+      return new Response(pck, { status: 200, headers: { "Content-Type": "application/octet-stream", "Content-Length": String(pck.size) } });
+    }
+    return realFetch(input, init);
+  };
+})();
+</script>
+<script>
+// Remarques des testeurs : Godot appelle mlFeedbackOpen({shot, context}).
+// Enregistrement dans la base de l'artefact (lue par Claude) quand le testeur y a droit,
+// sinon gardé sur le téléphone, avec un export en fichier à envoyer.
+(function () {
+  const KEY = "ml-feedback-v1", NAME = "ml-tester-name";
+  const $ = (id) => document.getElementById(id);
+  const box = $("fb"), shot = $("fbShot"), ctxEl = $("fbCtx"), nameEl = $("fbName"), text = $("fbText");
+  let current = null;
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; } }
+  function store(list) {
+    for (let i = 0; i < 60; i++) {
+      try { localStorage.setItem(KEY, JSON.stringify(list)); return; }
+      catch (e) { const old = list.find((x) => x.shot); if (!old) return; old.shot = ""; }
+    }
+  }
+  function toast(msg) { const t = $("fbToast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 3200); }
+  const h = (v) => String(v).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+  function where(c) {
+    const tabs = { vie: "Écran de vie", title: "Accueil", create: "Création" };
+    let s = c.mode === "event" ? "Événement" : c.mode === "consequence" ? "Conséquence" : c.mode === "combat" ? "Combat" : (tabs[c.tab] || "Onglet " + h(c.tab));
+    if (c.event_title) s += " « " + h(c.event_title) + " »";
+    const who = [c.name, c.race, c.age != null ? c.age + " ans" : "", c.planet].filter(Boolean).map(h).join(" • ");
+    return s + (who ? "<br>" + who : "");
+  }
+  function count() { const l = load(); const n = l.length, waiting = l.filter((x) => !x.synced).length;
+    $("fbCount").textContent = n ? n + " remarque" + (n > 1 ? "s" : "") + (waiting ? " (" + waiting + " sur ce téléphone)" : " envoyée" + (n > 1 ? "s" : "")) : "";
+    $("fbExport").hidden = !waiting; }
+  function close() { box.classList.remove("open"); current = null; const cv = $("canvas"); if (cv) cv.focus(); }
+  ["keydown", "keyup", "keypress"].forEach((k) => box.addEventListener(k, (e) => e.stopPropagation()));
+  window.mlFeedbackOpen = function (payload) {
+    current = payload; shot.src = payload.shot || "";
+    ctxEl.innerHTML = where(payload.context || {});
+    let n = ""; try { n = localStorage.getItem(NAME) || ""; } catch (e) {}
+    nameEl.value = n; nameEl.hidden = !!n; text.value = ""; count();
+    box.classList.add("open"); setTimeout(() => text.focus(), 60);
+  };
+  async function push(entry) {
+    if (!window.claude || !window.claude.use) return false;
+    try {
+      const db = await window.claude.use("db"); if (!db) return false;
+      const u = await window.claude.use("user");
+      const doc = Object.assign({}, entry); delete doc.synced;
+      const uid = u ? await u.id() : null; if (!uid) return false;
+      doc.author = uid;
+      await db.collection("feedback/" + uid + "/notes").add(doc);
+      // Fiche du testeur au-dessus de ses remarques (sert à les retrouver).
+      try { await db.doc("feedback/" + uid).set({ tester: entry.tester, last_at: entry.at }); } catch (e) {}
+      return true;
+    } catch (e) { console.warn("remarque non envoyée", e); return false; }
+  }
+  // Au chargement : envoie les remarques restées sur le téléphone et signale le testeur.
+  setTimeout(async function () {
+    try {
+      if (!window.claude || !window.claude.use) return;
+      const db = await window.claude.use("db"); const u = await window.claude.use("user");
+      if (!db || !u) return;
+      const uid = await u.id(); if (!uid) return;
+      const l = load(); if (!l.length) return;
+      let changed = false;
+      for (const x of l) if (!x.synced) { if (await push(x)) { x.synced = true; x.shot = ""; changed = true; } }
+      if (changed) store(l);
+      const last = l[l.length - 1];
+      await db.doc("feedback/" + uid).set({ tester: last.tester || "anonyme", last_at: last.at, total: l.length });
+    } catch (e) { console.warn("synchro remarques", e); }
+  }, 4000);
+  $("fbCancel").onclick = close;
+  $("fbSend").onclick = async function () {
+    const note = text.value.trim(); if (!note || !current) { text.focus(); return; }
+    const tester = nameEl.value.trim(); if (tester) { try { localStorage.setItem(NAME, tester); } catch (e) {} }
+    const entry = { note, tester: tester || "anonyme", at: new Date().toISOString(), context: current.context || {}, shot: current.shot || "", synced: false };
+    this.disabled = true; close();
+    const list = load(); list.push(entry); store(list);
+    toast("Remarque notée ! Envoi en cours…");
+    entry.synced = await Promise.race([push(entry), new Promise((r) => setTimeout(() => r(false), 12000))]);
+    if (entry.synced) {
+      const l2 = load(); const me = l2.find((x) => x.at === entry.at); if (me) { me.synced = true; me.shot = ""; }
+      // Envoie aussi celles restées en attente.
+      for (const x of l2) if (!x.synced && x.shot !== undefined && x !== me) { if (await push(x)) { x.synced = true; x.shot = ""; } }
+      store(l2); toast("Merci ! Remarque envoyée au créateur.");
+    } else toast("Remarque gardée sur ce téléphone. Exporte-les à la fin depuis la bulle.");
+    this.disabled = false;
+  };
+  $("fbExport").onclick = async function () {
+    const list = load().filter((x) => !x.synced); if (!list.length) return;
+    const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+    const rows = list.map((x) => `<section><h3>${esc(x.tester)} — ${esc(new Date(x.at).toLocaleString("fr-FR"))}</h3><p class="w">${where(x.context || {})}</p><p>${esc(x.note).replace(/\n/g, "<br>")}</p>${x.shot ? `<img src="${x.shot}">` : ""}<pre>${esc(JSON.stringify(x.context))}</pre></section>`).join("");
+    const html = `<!doctype html><meta charset="utf-8"><title>Remarques Manga Life</title><style>body{font-family:system-ui;max-width:640px;margin:20px auto;padding:0 16px}section{border-bottom:1px solid #ccc;padding:12px 0}img{width:240px;border-radius:8px}.w{color:#666;font-size:13px}pre{font-size:11px;color:#888;white-space:pre-wrap}</style><h1>Remarques Manga Life (${list.length})</h1>${rows}`;
+    const blob = new Blob([html], { type: "text/html" });
+    const filename = "remarques-manga-life-" + (nameEl.value.trim() || "testeur").replace(/[^\w-]/g, "") + ".html";
+    try {
+      const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+      if (dl) { await dl.save({ filename, data: blob }); toast("Fichier prêt : envoie-le au créateur du jeu."); return; }
+    } catch (e) { if (e && e.code === "declined") return; }
+    // Pas de téléchargement possible ici : on copie le texte des remarques.
+    const txt = "Remarques Manga Life\n\n" + list.map((x) => `[${x.tester} — ${new Date(x.at).toLocaleString("fr-FR")}] ${where(x.context || {}).replace(/<br>/g, " — ").replace(/<[^>]+>/g, "")}\n${x.note}`).join("\n\n");
+    try { await navigator.clipboard.writeText(txt); toast("Remarques copiées : colle-les dans un message au créateur du jeu."); }
+    catch (e) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); }
+  };
+})();
+</script>
+<script>
+// Lecture à voix haute (accessibilité) : voix française du téléphone.
+(function () {
+  const synth = window.speechSynthesis;
+  let voice = null;
+  function pick() {
+    if (!synth) return;
+    const vs = synth.getVoices().filter((v) => /^fr/i.test(v.lang));
+    voice = vs.find((v) => /fr-FR/i.test(v.lang) && v.localService) || vs.find((v) => /fr-FR/i.test(v.lang)) || vs[0] || null;
+  }
+  if (synth) { pick(); synth.onvoiceschanged = pick; }
+  window.mlSpeak = function (text) {
+    if (!synth) return;
+    try {
+      synth.cancel();
+      // Phrase par phrase : iOS coupe parfois les textes longs.
+      const parts = String(text).match(/[^.!?…]+[.!?…]*/g) || [String(text)];
+      for (const p of parts) {
+        const t = p.trim(); if (!t) continue;
+        const u = new SpeechSynthesisUtterance(t);
+        u.lang = voice ? voice.lang : "fr-FR"; if (voice) u.voice = voice;
+        u.rate = 1.0; u.pitch = 1.0;
+        synth.speak(u);
+      }
+    } catch (e) { console.warn("lecture", e); }
+  };
+  window.mlSpeakStop = function () { try { synth && synth.cancel(); } catch (e) {} };
+})();
+</script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  const splash = document.getElementById("splash");
+  const fill = document.getElementById("fill");
+  const status = document.getElementById("status");
+  function fail(err) {
+    console.error(err);
+    status.textContent = "Le jeu n'a pas pu démarrer : " + (err && err.message ? err.message : err);
+    status.classList.add("error");
+  }
+  if (typeof Engine === "undefined") { fail(new Error("moteur non chargé")); return; }
+  const config = {
+    args: [], canvasResizePolicy: 2, executable: "index", experimentalVK: true,
+    fileSizes: { "index.pck": 71653444, "index.wasm": 39513091 },
+    focusCanvas: true, gdextensionLibs: [], emscriptenPoolSize: 8, godotPoolSize: 4,
+    ensureCrossOriginIsolationHeaders: false
+  };
+  const missing = Engine.getMissingFeatures({ threads: false });
+  if (missing.length) { fail(new Error("fonctions manquantes : " + missing.join(", "))); return; }
+  const engine = new Engine(config);
+  status.textContent = "Téléchargement des données du jeu…";
+  engine.startGame({
+    onProgress: function (current, total) {
+      if (current > 0 && total > 0) {
+        const pct = Math.min(100, Math.round(current / total * 100));
+        fill.style.width = pct + "%";
+        status.textContent = pct < 100 ? "Chargement… " + pct + " %" : "Démarrage de la vie…";
+      }
+    }
+  }).then(function () {
+    fill.style.width = "100%";
+    splash.classList.add("done");
+    setTimeout(function () { splash.hidden = true; }, 600);
+  }, fail);
+})();
+</script>

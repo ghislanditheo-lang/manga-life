@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Manga Life — Vivez une vie de héros</title>
+<meta name="description" content="Manga Life : le simulateur de vie dans un univers manga original. Naissez sur Terre, Astria ou Verdea, éveillez vos pouvoirs, trouvez un maître et écrivez votre légende. Gratuit.">
+<meta property="og:title" content="Manga Life">
+<meta property="og:description" content="Le simulateur de vie dans un univers manga original. Gratuit sur mobile et navigateur.">
+<meta property="og:image" content="img/bg-astria.webp">
+<link rel="icon" href="img/icon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#f6f1ff;--muted:#c9c0e0;--gold:#ffd27a;--gold2:#ffb648;--night:#140f2b;--card:rgba(25,18,52,.72);--line:rgba(255,210,122,.28)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--night);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.55}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header.hero{position:relative;min-height:92vh;display:flex;align-items:flex-end;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:url(img/bg-astria.webp) center 30%/cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,15,43,.15) 0%,rgba(20,15,43,.55) 55%,var(--night) 100%)}
+.hero .wrap{position:relative;z-index:1;padding-bottom:64px;width:100%}
+nav{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;max-width:1080px;margin:0 auto}
+.brand{display:flex;gap:10px;align-items:center;font-family:"Zen Maru Gothic";font-weight:900;font-size:20px;text-decoration:none}
+.brand img{width:38px;height:38px;border-radius:10px}
+.lang{display:flex;gap:4px;background:rgba(0,0,0,.35);border-radius:99px;padding:4px}
+.lang button{border:0;background:none;color:var(--muted);font:600 13px Inter;padding:6px 12px;border-radius:99px;cursor:pointer}
+.lang button.on{background:var(--gold);color:#2a1a00}
+h1{font-family:"Zen Maru Gothic";font-weight:900;font-size:clamp(44px,9vw,92px);line-height:1;letter-spacing:-.02em;text-shadow:0 4px 30px rgba(0,0,0,.5)}
+h1 span{color:var(--gold)}
+.tag{font-size:clamp(17px,2.4vw,22px);max-width:620px;margin:18px 0 28px;color:#efe8ff}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:16px;font:700 17px Inter;text-decoration:none;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#2a1a00;box-shadow:0 10px 30px rgba(255,182,72,.35)}
+.btn.ghost{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(6px)}
+.soon{font-size:12px;opacity:.75;font-weight:600}
+section{padding:72px 0}
+h2{font-family:"Zen Maru Gothic";font-weight:900;font-size:clamp(28px,4.5vw,42px);margin-bottom:12px}
+.lead{color:var(--muted);max-width:640px;margin-bottom:36px}
+.races{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.race{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;text-align:center;overflow:hidden}
+.race img{height:260px;width:100%;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+.race h3{font-family:"Zen Maru Gothic";font-size:22px;margin-top:8px;color:var(--gold)}
+.race p{color:var(--muted);font-size:15px}
+.feats{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.feat{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
+.feat b{display:block;font-size:18px;margin-bottom:4px}
+.feat p{color:var(--muted);font-size:15px}
+.band{background:url(img/bg-verdea.webp) center/cover;position:relative;border-radius:28px;overflow:hidden;padding:56px 28px;text-align:center}
+.band::before{content:"";position:absolute;inset:0;background:rgba(20,15,43,.7)}
+.band>*{position:relative}
+footer{padding:36px 0 48px;color:var(--muted);font-size:14px;border-top:1px solid rgba(255,255,255,.08)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+html:not([lang=fr]) [data-l=fr],html:not([lang=en]) [data-l=en]{display:none!important}
+@media (max-width:720px){.races{grid-template-columns:1fr}.race img{height:220px}.feats{grid-template-columns:1fr}header.hero{min-height:88vh}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <nav>
+    <a class="brand" href="#"><img src="img/icon.png" alt="">Manga Life</a>
+    <div class="lang"><button data-set="fr">FR</button><button data-set="en">EN</button></div>
+  </nav>
+  <div class="wrap">
+    <h1>Manga <span>Life</span></h1>
+    <p class="tag" data-l="fr">Naissez, grandissez, éveillez vos pouvoirs. Choisissez chaque décision d'une vie entière dans un univers manga original — et écrivez votre propre légende.</p>
+    <p class="tag" data-l="en">Be born, grow up, awaken your powers. Make every decision of an entire life in an original manga universe — and write your own legend.</p>
+    <div class="ctas">
+      <a class="btn primary" href="play/"><span data-l="fr">Jouer gratuitement</span><span data-l="en">Play for free</span></a>
+      <span class="btn ghost">Google Play <span class="soon" data-l="fr">· bientôt</span><span class="soon" data-l="en">· soon</span></span>
+      <span class="btn ghost">App Store <span class="soon" data-l="fr">· bientôt</span><span class="soon" data-l="en">· soon</span></span>
+    </div>
+  </div>
+</header>
+
+<section><div class="wrap">
+  <h2 data-l="fr">Trois peuples, trois destins</h2><h2 data-l="en">Three peoples, three destinies</h2>
+  <p class="lead" data-l="fr">Chaque vie commence par un choix : sur quelle planète, et dans quel corps, allez-vous naître ?</p>
+  <p class="lead" data-l="en">Every life begins with a choice: on which planet, and in which body, will you be born?</p>
+  <div class="races">
+    <div class="race"><img src="img/humain.webp" alt=""><h3 data-l="fr">Humains</h3><h3 data-l="en">Humans</h3><p data-l="fr">Équilibrés. Leur arme : une volonté que rien ne brise.</p><p data-l="en">Balanced. Their weapon: a will that nothing can break.</p></div>
+    <div class="race"><img src="img/astrien.webp" alt=""><h3 data-l="fr">Astriens</h3><h3 data-l="en">Astrians</h3><p data-l="fr">Les plus puissants. Le soleil dort sous leur peau.</p><p data-l="en">The most powerful. The sun sleeps beneath their skin.</p></div>
+    <div class="race"><img src="img/verdari.webp" alt=""><h3 data-l="fr">Verdari</h3><h3 data-l="en">Verdari</h3><p data-l="fr">Sages et longévifs. La nature répond à leur appel.</p><p data-l="en">Wise and long-lived. Nature answers their call.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <h2 data-l="fr">Une vie entière entre vos mains</h2><h2 data-l="en">A whole life in your hands</h2>
+  <div class="feats">
+    <div class="feat"><b data-l="fr">Plus de 10 000 événements</b><b data-l="en">Over 10,000 events</b><p data-l="fr">Du berceau à la vieillesse : amitiés, rivalités, études, métiers, amours, drames et triomphes.</p><p data-l="en">From the cradle to old age: friendships, rivalries, school, careers, love, tragedy and triumph.</p></div>
+    <div class="feat"><b data-l="fr">Pouvoirs et transformations</b><b data-l="en">Powers and transformations</b><p data-l="fr">Sentez votre première étincelle, trouvez un maître, apprenez des techniques et atteignez l'Éveil.</p><p data-l="en">Feel your first spark, find a master, learn techniques and reach your Awakening.</p></div>
+    <div class="feat"><b data-l="fr">Combats et donjons</b><b data-l="en">Fights and dungeons</b><p data-l="fr">Tournois, failles, rivaux de toujours : chaque combat se joue au tour par tour.</p><p data-l="en">Tournaments, rifts, lifelong rivals: every fight is turn-based.</p></div>
+    <div class="feat"><b data-l="fr">Héritage et lignées</b><b data-l="en">Legacy and bloodlines</b><p data-l="fr">À votre mort, continuez avec votre enfant et bâtissez une dynastie sur plusieurs générations.</p><p data-l="en">When you die, carry on as your child and build a dynasty across generations.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="band">
+    <h2 data-l="fr">Votre légende commence maintenant</h2><h2 data-l="en">Your legend starts now</h2>
+    <p class="lead" style="margin:0 auto 24px" data-l="fr">Gratuit, directement dans votre navigateur. Aucune inscription.</p>
+    <p class="lead" style="margin:0 auto 24px" data-l="en">Free, right in your browser. No sign-up.</p>
+    <a class="btn primary" href="play/"><span data-l="fr">Jouer maintenant</span><span data-l="en">Play now</span></a>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <span>© 2026 GT Presse SRL — Manga Life</span>
+  <span><a href="privacy.html"><span data-l="fr">Politique de confidentialité</span><span data-l="en">Privacy policy</span></a></span>
+</div></footer>
+<script>
+(function(){
+  var saved=null; try{saved=localStorage.getItem('ml-lang')}catch(e){}
+  var l=saved||((navigator.language||'fr').slice(0,2)==='fr'?'fr':'en');
+  function set(x){document.documentElement.lang=x;document.querySelectorAll('.lang button').forEach(function(b){b.classList.toggle('on',b.dataset.set===x)});try{localStorage.setItem('ml-lang',x)}catch(e){}}
+  document.querySelectorAll('.lang button').forEach(function(b){b.onclick=function(){set(b.dataset.set)}});
+  set(l);
+})();
+</script>
+</body>
+</html>
