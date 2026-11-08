@@ -1,0 +1,12 @@
+{
+  "name": "Manga Life",
+  "short_name": "Manga Life",
+  "start_url": "./play/",
+  "display": "standalone",
+  "background_color": "#140f2b",
+  "theme_color": "#140f2b",
+  "icons": [
+    {"src": "img/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "img/icon.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
