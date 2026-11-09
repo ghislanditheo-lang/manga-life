@@ -201,7 +201,7 @@ h1 {
       return new Response(raw, { status: 200, headers: { "Content-Type": "application/wasm", "Content-Length": String(raw.size) } });
     }
     if (/(^|\/)index\.pck(\?|$)/.test(url)) {
-      const gzp = await joinParts(["pckgz0.wasm", "pckgz1.wasm", "pckgz2.wasm", "pckgz3.wasm", "pckgz4.wasm"]);
+      const gzp = await joinParts(["pckgz0.wasm", "pckgz1.wasm", "pckgz2.wasm", "pckgz3.wasm", "pckgz4.wasm", "pckgz5.wasm"]);
       const pck = await new Response(gzp.stream().pipeThrough(new DecompressionStream("gzip"))).blob();
       return new Response(pck, { status: 200, headers: { "Content-Type": "application/octet-stream", "Content-Length": String(pck.size) } });
     }
@@ -353,7 +353,7 @@ h1 {
   if (typeof Engine === "undefined") { fail(new Error("moteur non chargé")); return; }
   const config = {
     args: [], canvasResizePolicy: 2, executable: "index", experimentalVK: true,
-    fileSizes: { "index.pck": 75506176, "index.wasm": 39513091 },
+    fileSizes: { "index.pck": 83885596, "index.wasm": 39513091 },
     focusCanvas: true, gdextensionLibs: [], emscriptenPoolSize: 8, godotPoolSize: 4,
     ensureCrossOriginIsolationHeaders: false
   };
