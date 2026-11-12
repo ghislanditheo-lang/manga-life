@@ -17,7 +17,7 @@ document.addEventListener('focusin',e=>{const t=e.target;if(t&&(t.tagName==='INP
 document.addEventListener('focusout',()=>{setTimeout(()=>{window.scrollTo(0,0);},50);},true);
 </script>
 </head>
-<body><title>Manga Life Simulator</title>
+<body><title>Manga Life</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
@@ -44,7 +44,8 @@ body {
 }
 /* iOS agrandit la page quand un champ de saisie a un texte < 16 px : on l'en empêche. */
 input, textarea { font-size: 16px !important; }
-html, body { overscroll-behavior: none; }
+html, body { overscroll-behavior: none; position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+#canvas { touch-action: none; }
 #canvas {
   display: block;
   position: fixed;
@@ -179,6 +180,30 @@ h1 {
     window.visualViewport.addEventListener("resize", function () { if (window.visualViewport.scale <= 1.01) reset(); });
   }
   document.addEventListener("gesturestart", function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener("gesturechange", function (e) { e.preventDefault(); }, { passive: false });
+  // iPhone : le double appui (règle « touche 2 fois pour valider ») déclenchait le
+  // zoom de Safari, et un glissé faisait rebondir toute la page. Le jeu reçoit
+  // quand même tous ses touchers (écouteurs du canvas, appelés avant celui-ci).
+  var lastEnd = 0;
+  document.addEventListener("touchend", function (e) {
+    var t = e.target, now = Date.now();
+    if (!(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) && now - lastEnd < 450) e.preventDefault();
+    lastEnd = now;
+  }, { passive: false });
+  document.addEventListener("dblclick", function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener("touchmove", function (e) {
+    var t = e.target;
+    if (e.touches.length > 1 || !(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA"))) e.preventDefault();
+  }, { passive: false });
+  // si un zoom est quand même passé, on le remet à 1 tout de suite
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", function () {
+      if (window.visualViewport.scale > 1.01) {
+        vp.setAttribute("content", "width=device-width, initial-scale=1.0001, maximum-scale=1, user-scalable=no, viewport-fit=cover");
+        setTimeout(function () { vp.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"); reset(); }, 30);
+      }
+    });
+  }
   var realDpr = window.devicePixelRatio || 1;
   try { Object.defineProperty(window, "devicePixelRatio", { get: function () { return Math.min(2, realDpr); }, configurable: true }); } catch (e) {}
 })();
