@@ -44,7 +44,7 @@ body {
 }
 /* iOS agrandit la page quand un champ de saisie a un texte < 16 px : on l'en empêche. */
 input, textarea { font-size: 16px !important; }
-html, body { overscroll-behavior: none; position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+html, body { overscroll-behavior: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; margin: 0; padding: 0; width: 100%; height: 100%; max-width: 100vw; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 #canvas { touch-action: none; }
 #canvas {
   display: block;
@@ -195,15 +195,23 @@ h1 {
     var t = e.target;
     if (e.touches.length > 1 || !(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA"))) e.preventDefault();
   }, { passive: false });
-  // si un zoom est quand même passé, on le remet à 1 tout de suite
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", function () {
-      if (window.visualViewport.scale > 1.01) {
-        vp.setAttribute("content", "width=device-width, initial-scale=1.0001, maximum-scale=1, user-scalable=no, viewport-fit=cover");
-        setTimeout(function () { vp.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"); reset(); }, 30);
-      }
-    });
+  // l'écran doit rester calé : si un zoom ou un décalage est passé (bande vide sur
+  // un côté), on recale la page à gauche et en haut, sans toucher à l'échelle
+  function recale() {
+    var v = window.visualViewport;
+    if (window.scrollX || window.scrollY || (v && (Math.abs(v.offsetLeft) > 0.5 || Math.abs(v.offsetTop) > 0.5))) {
+      reset();
+      window.scrollTo(0, 0);
+    }
   }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", recale);
+    window.visualViewport.addEventListener("scroll", recale);
+  }
+  window.addEventListener("scroll", recale, { passive: true });
+  window.addEventListener("orientationchange", function () { setTimeout(recale, 300); });
+  document.addEventListener("touchend", function () { setTimeout(recale, 60); }, { passive: true });
+  setInterval(recale, 1500);
   var realDpr = window.devicePixelRatio || 1;
   try { Object.defineProperty(window, "devicePixelRatio", { get: function () { return Math.min(2, realDpr); }, configurable: true }); } catch (e) {}
 })();
@@ -383,7 +391,7 @@ h1 {
   if (typeof Engine === "undefined") { fail(new Error("moteur non chargé")); return; }
   const config = {
     args: [], canvasResizePolicy: 2, executable: "index", experimentalVK: true,
-    fileSizes: { "index.pck": 89795828, "index.wasm": 39513091 },
+    fileSizes: { "index.pck": 89884228, "index.wasm": 39513091 },
     focusCanvas: true, gdextensionLibs: [], emscriptenPoolSize: 8, godotPoolSize: 4,
     ensureCrossOriginIsolationHeaders: false
   };
