@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Manga Life Simulator</title>
 <link rel="icon" type="image/png" href="https://ghislanditheo-lang.github.io/manga-life/img/icon.png?v=4">
 <link rel="apple-touch-icon" sizes="180x180" href="https://ghislanditheo-lang.github.io/manga-life/img/apple-touch-icon.png?v=4">
 <meta name="apple-mobile-web-app-title" content="Manga Life Sim">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#070b1c">
 <link rel="manifest" href="../manifest.webmanifest?v=5">
 <script>
@@ -182,8 +183,9 @@ h1 {
 (function () {
   var vp = document.querySelector('meta[name="viewport"]');
   if (!vp) { vp = document.createElement("meta"); vp.name = "viewport"; document.head.appendChild(vp); }
-  // pas de viewport-fit=cover : la page ne doit pas passer sous la zone de l'heure (iPhone Duo)
-  vp.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
+  // viewport-fit=cover : le jeu (décor) couvre tout l'écran, sans bande noire ; le jeu
+  // place lui-même ses boutons hors des zones système via env(safe-area-inset-*)
+  vp.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover");
   function reset() { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; }
   document.addEventListener("focusout", function () { setTimeout(reset, 50); }, true);
   if (window.visualViewport) {
@@ -401,7 +403,7 @@ h1 {
   if (typeof Engine === "undefined") { fail(new Error("moteur non chargé")); return; }
   const config = {
     args: [], canvasResizePolicy: 2, executable: "index", experimentalVK: true,
-    fileSizes: { "index.pck": 89885348, "index.wasm": 39513091 },
+    fileSizes: { "index.pck": 89885684, "index.wasm": 39513091 },
     focusCanvas: true, gdextensionLibs: [], emscriptenPoolSize: 8, godotPoolSize: 4,
     ensureCrossOriginIsolationHeaders: false
   };
